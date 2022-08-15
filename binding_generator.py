@@ -202,7 +202,7 @@ def generate_builtin_bindings(api, output_dir, build_config):
                 used_classes.remove(type_name)
 
         with header_filename.open("w+") as header_file:
-            header_file.write(generate_builtin_class_header(builtin_api, size, used_classes, fully_used_classes))
+            header_file.write(generate_builtin_class_header(builtin_api, size, used_classes, fully_used_classes, api))
 
         with source_filename.open("w+") as source_file:
             source_file.write(generate_builtin_class_source(builtin_api, size, used_classes, fully_used_classes))
@@ -228,7 +228,7 @@ def generate_builtin_bindings(api, output_dir, build_config):
         builtin_header_file.write("\n".join(builtin_header))
 
 
-def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_classes):
+def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_classes, api):
     result = []
 
     class_name = builtin_api["name"]
@@ -265,8 +265,12 @@ def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_cl
     result.append("namespace godot {")
     result.append("")
 
+    struct_types = [ rec['name'] for rec in api['native_structures'] ]
     for type_name in used_classes:
-        result.append(f"class {type_name};")
+        if type_name in struct_types:
+            result.append(f"struct {type_name};")
+        else:
+            result.append(f"class {type_name};")
 
     if len(used_classes) > 0:
         result.append("")
@@ -881,7 +885,7 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
 
         with header_filename.open("w+") as header_file:
             header_file.write(
-                generate_engine_class_header(class_api, used_classes, fully_used_classes, use_template_get_node)
+                generate_engine_class_header(class_api, used_classes, fully_used_classes, use_template_get_node, api)
             )
 
         with source_filename.open("w+") as source_file:
@@ -938,7 +942,7 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
             header_file.write("\n".join(result))
 
 
-def generate_engine_class_header(class_api, used_classes, fully_used_classes, use_template_get_node):
+def generate_engine_class_header(class_api, used_classes, fully_used_classes, use_template_get_node, api):
     global singletons
     result = []
 
@@ -970,8 +974,12 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
     result.append("namespace godot {")
     result.append("")
 
+    struct_types = [ rec['name'] for rec in api['native_structures'] ]
     for type_name in used_classes:
-        result.append(f"class {type_name};")
+        if type_name in struct_types:
+            result.append(f"struct {type_name};")
+        else:
+            result.append(f"class {type_name};")
 
     if len(used_classes) > 0:
         result.append("")
